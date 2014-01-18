@@ -38,6 +38,7 @@ def import_graph(args, g):
             price = float(row[3])
             g.add_edge(from_a, to_b, date, price)
     print "Successfully imported graph from %s !"%fname
+    return True
 
 def export_graph(args, g):
     if len(args) != 2:
@@ -57,6 +58,7 @@ def add_edge_to_graph(args, g):
             edge = g.get_edge(edge_id)
             if edge:
                 edge[3] = True
+                print "Successfully re-added edge %d"%edge_id
                 return True
             else:
                 return False
@@ -66,6 +68,8 @@ def add_edge_to_graph(args, g):
             date = args[3]
             price = float(args[4])
             g.add_edge(from_a, to_b, date, price)
+            print ("Successfully added edge from %s to %s on date %s for $%.2f"
+                    %(from_a, to_b, date, price))
             return True
         else:
             return False
@@ -79,6 +83,7 @@ def remove_edge_from_graph(args, g):
             edge = g.get_edge(edge_id)
             if edge:
                 edge[3] = False
+                print "edge %d successfully removed"%edge_id
                 return True
             else:
                 return False
@@ -97,7 +102,8 @@ def find_shortest_path(args, g):
     print "%s-->"%start
     for to_b, date, price in shortest_path:
         print "%s\t\t%s\t\t$%.2f"%(to_b, date, price)
-    print "TOTAL PRICE:\t$%.2f"%total_price
+    print "TOTAL PRICE:\t\t\t$%.2f"%total_price
+    return True
 
 def list_edges(args, g):
     if len(args) > 2:
