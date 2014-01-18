@@ -58,7 +58,7 @@ def add_edge_to_graph(args, g):
             edge = g.get_edge(edge_id)
             if edge:
                 edge[3] = True
-                print "Successfully re-added edge %d"%edge_id
+                print "Successfully re-added edge %d."%edge_id
                 return True
             else:
                 return False
@@ -68,7 +68,7 @@ def add_edge_to_graph(args, g):
             date = args[3]
             price = float(args[4])
             g.add_edge(from_a, to_b, date, price)
-            print ("Successfully added edge from %s to %s on date %s for $%.2f"
+            print ("Successfully added edge from %s to %s on date %s for $%.2f."
                     %(from_a, to_b, date, price))
             return True
         else:
@@ -83,7 +83,7 @@ def remove_edge_from_graph(args, g):
             edge = g.get_edge(edge_id)
             if edge:
                 edge[3] = False
-                print "edge %d successfully removed"%edge_id
+                print "Successfully removed edge %d."%edge_id
                 return True
             else:
                 return False
