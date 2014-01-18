@@ -143,6 +143,9 @@ def main():
         if cmd == '':
             continue
         success = parse_and_execute_cmd(cmd, g)
+        if not success:
+            print ("Command '%s' did not succeed. "
+                    "Was it in the wrong format?"%cmd)
         
 if __name__ == '__main__':
     main()
