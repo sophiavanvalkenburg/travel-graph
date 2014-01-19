@@ -92,18 +92,59 @@ def remove_edge_from_graph(args, g):
     except ValueError:
         return False
 
-def find_shortest_path(args, g):
-    if len(args) != 3:
+def find_paths(args, g):
+    n_args = len(args)
+    if n_args == 3:
+        start = args[1]
+        end = args[2]
+        find_all_paths(g, start, end)
+    elif n_args == 4:
+        start = args[2]
+        end = args[3]
+        if args[1] == '--shortest':
+            find_shortest_path(g, start, end)
+        elif args[1] == '--ham':
+            find_ham_paths(g, start, end)
+        else:
+            return False
+    elif n_args == 5:
+        start = args[3]
+        end = args[4]
+        if '--shortest' in args[1:3] and '--ham' in args[1:3]:
+            find_shortest_ham_path(g, start, end)
+    else:
         return False
-    start = args[1]
-    end = args[2]
-    shortest_path = g.shortest_path(start, end)
-    total_price = g.distance(shortest_path)
-    print "%s-->"%start
-    for to_b, date, price in shortest_path:
-        print "%s\t\t%s\t\t$%.2f"%(to_b, date, price)
-    print "TOTAL PRICE:\t\t\t$%.2f"%total_price
     return True
+
+def find_all_paths(g, start, end):
+    all_paths = g.paths(start, end)
+    all_paths.sort(key=g.distance)
+    for path in all_paths:
+        print "%s-->"%start
+        print g.path_str(path)
+        print "TOTAL PRICE: $%.2f"%g.distance(path)
+        print "-----------------------------------"
+
+def find_ham_paths(g, start, end):
+    ham_paths = g.ham_paths(start, end)
+    ham_paths.sort(key=g.distance)
+    for path in ham_paths:
+        print "%s-->"%start
+        print g.path_str(path)
+        print "TOTAL_PRICE: $%.2f"%g.distance(path)
+        print "-----------------------------------"
+
+def find_shortest_path(g, start, end):
+    shortest_path = g.shortest_path(start, end)
+    print "%s-->"%start
+    print g.path_str(shortest_path)
+    print "TOTAL PRICE: $%.2f"%g.distance(shortest_path)
+
+def find_shortest_ham_path(g, start, end):
+    shortest_ham_path = g.shortest_ham_path(start, end)
+    print "%s-->"%start
+    print g.path_str(shortest_ham_path)
+    print "TOTAL PRICE: $%.2f"%g.distance(shortest_ham_path)
 
 def list_edges(args, g):
     if len(args) > 2:
@@ -125,14 +166,14 @@ def parse_and_execute_cmd(cmd, g):
     func_dict = {  
         # dictionary containing functions for executing commands.
         # each takes args as its argument and return True or False.
-        'import'  : import_graph,
-        'export'  : export_graph,
-        'add'     : add_edge_to_graph,
-        'remove'  : remove_edge_from_graph,
-        'path'    : find_shortest_path,
-        'list'    : list_edges,
-        'usage'   : print_usage,
-        'quit'    : None
+        'paths'     : find_paths,
+        'import'    : import_graph,
+        'export'    : export_graph,
+        'add'       : add_edge_to_graph,
+        'remove'    : remove_edge_from_graph,
+        'list'      : list_edges,
+        'usage'     : print_usage,
+        'quit'      : None
     }
     cmd_func = func_dict.get(args[0], print_usage)
     if cmd_func:
