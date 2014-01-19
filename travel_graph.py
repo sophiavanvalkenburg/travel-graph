@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import sys
 import csv
 from graph import Graph
 
@@ -36,27 +37,35 @@ def import_graph(args, g):
     if len(args) != 2:
         return False
     fname = args[1]
-    with open(fname, 'rb') as gfile:
-        reader = csv.reader(gfile)
-        for row in reader:
-            if len(row) != 4:
-                continue
-            from_a = row[0]
-            to_b = row[1]
-            date = row[2]
-            price = float(row[3])
-            g.add_edge(from_a, to_b, date, price)
-    print "Successfully imported graph from %s !"%fname
+    try:
+        with open(fname, 'rb') as gfile:
+            reader = csv.reader(gfile)
+            for row in reader:
+                if len(row) != 4:
+                    continue
+                from_a = row[0]
+                to_b = row[1]
+                date = row[2]
+                price = float(row[3])
+                g.add_edge(from_a, to_b, date, price)
+        print "Successfully imported graph from %s !"%fname
+    except IOError:
+        print "Error reading file %s."%fname
+        return False
     return True
 
 def export_graph(args, g):
     if len(args) != 2:
         return False
     fname = args[1]
-    with open(fname, 'w') as outfile:
-        outfile.write(str(g))
-        outfile.close()
-    print "Successfully wrote graph to %s !"%fname
+    try:
+        with open(fname, 'w') as outfile:
+            outfile.write(str(g))
+            outfile.close()
+        print "Successfully wrote graph to %s !"%fname
+    except IOError:
+        print "Error writing file %s"%fname
+        return False
     return True
     
 def add_edge_to_graph(args, g):
@@ -210,10 +219,13 @@ def parse_and_execute_cmd(cmd, g):
     else:
         return True
 
-def main():
+def main(argv):
     g = Graph()
     PROMPT = '"._.)> '
     cmd = ''
+    if len(argv) == 2:
+        # use argument as initial data
+        import_graph(argv, g)
     while cmd != 'quit':
         cmd = raw_input(PROMPT)
         if cmd == '':
@@ -224,4 +236,4 @@ def main():
                     "Was it in the wrong format?"%cmd)
         
 if __name__ == '__main__':
-    main()
+    main(sys.argv)
