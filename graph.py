@@ -52,24 +52,31 @@ class Graph():
             return {}
         else:
             return self.graph[from_a]
-    def path_contains(self, path, stops):
-        path_stops = []
-        for n, date, price in path:
-            path_stops.append(n)
-        return sorted(path_stops) == sorted(stops)
-    def ham_paths(self, from_a, to_b, stops=None):
+    def path_contains(self, path, from_stops, to_stops):
+        path_from_stops = []
+        path_to_stops = []
+        for edge in path:
+            from_a = edge[1]
+            to_b = edge[2]
+            path_from_stops.append(from_a)
+            path_to_stops.append(to_b)
+        return (sorted(path_from_stops) == sorted(from_stops)
+                and sorted(path_to_stops) == sorted(to_stops))
+    def ham_paths(self, from_a, to_b, from_stops=None, to_stops=None):
         """
         brute-force method for computing hamiltonian paths from a to b
         """
-        if stops is None:
-            stops = self.graph.keys()
-            stops.append(to_b)
-        # have to remove the start
-        stops = [ s for s in stops if s != from_a ]
+        if from_stops is None:
+            from_stops = self.graph.keys()
+        if to_stops is None:
+            to_stops = self.graph.keys()
+            to_stops.append(to_b)
+            to_stops.remove(from_a)
         # every path from a to b
         paths = self.paths(from_a, to_b)
         # filter paths that contain all stops
-        ham_paths = [ p for p in paths if self.path_contains(p, stops) ]
+        ham_paths = [ p for p in paths 
+                if self.path_contains(p, from_stops, to_stops) ]
         return ham_paths
     def paths(self, from_a, to_b):
         def helper(from_a, to_b, all_paths, seen_edges, last_date):
@@ -78,12 +85,11 @@ class Graph():
             neighbors = self.neighbors(from_a)
             if neighbors == {}:
                 return []
-            for n, vals in neighbors.items():
-                for val in vals:
-                    _, _, _, date, price, enabled = val
+            for n, edges in neighbors.items():
+                for edge in edges:
+                    _, _, _, date, price, enabled = edge
                     if not enabled or date <= last_date:
                         continue
-                    edge = (n, date, price)
                     if edge not in seen_edges:
                         seen_edges.append(edge)
                         if n != to_b:
@@ -106,12 +112,11 @@ class Graph():
             neighbors = self.neighbors(from_a)
             if neighbors == {}:
                 return []
-            for n, vals in neighbors.items():
-                for val in vals:
-                    _, _, _, date, price, enabled = val
+            for n, edges in neighbors.items():
+                for edge in edges:
+                    _, _, _, date, price, enabled = edge
                     if not enabled or date <= last_date:
                         continue
-                    edge = (n, date, price)
                     if edge not in current_path:
                         new_path = current_path + [edge]
                         if n != to_b:
@@ -124,14 +129,14 @@ class Graph():
                 return min(paths, key=self.distance)
         return helper(from_a, to_b, [], self.EARLIEST_DATE)
     def distance(self, path):
-        # path is list of (to_b, date, price)
-        return sum( price for to_b, date, price in path )
+        return sum( p[4] for p in path )
     def path_str(self,path):
         path_str = ''
         for edge in path:
-            n, date, price = edge
+            _, from_a, to_b, date, price, _ = edge
             date = datetime.strftime(date, '%m/%d')
-            path_str += "%s\t%s\t$%.2f\n"%(n, date, price)
+            path_str += "%s->%s\t%s\t$%.2f\n"%(from_a, to_b, date, price)
+        path_str += "\nTOTAL PRICE: $%.2f"%self.distance(path)
         return path_str 
     def __str__(self):
         graph_str = ''

@@ -147,31 +147,23 @@ def find_all_paths(g, start, end):
     all_paths = g.paths(start, end)
     all_paths.sort(key=g.distance)
     for path in all_paths:
-        print "%s-->"%start
         print g.path_str(path)
-        print "TOTAL PRICE: $%.2f"%g.distance(path)
-        print "-----------------------------------"
+        print "---------------------------------------"
 
 def find_ham_paths(g, start, end):
     ham_paths = g.ham_paths(start, end)
     ham_paths.sort(key=g.distance)
     for path in ham_paths:
-        print "%s-->"%start
         print g.path_str(path)
-        print "TOTAL_PRICE: $%.2f"%g.distance(path)
-        print "-----------------------------------"
+        print "---------------------------------------"
 
 def find_shortest_path(g, start, end):
     shortest_path = g.shortest_path(start, end)
-    print "%s-->"%start
     print g.path_str(shortest_path)
-    print "TOTAL PRICE: $%.2f"%g.distance(shortest_path)
 
 def find_shortest_ham_path(g, start, end):
     shortest_ham_path = g.shortest_ham_path(start, end)
-    print "%s-->"%start
     print g.path_str(shortest_ham_path)
-    print "TOTAL PRICE: $%.2f"%g.distance(shortest_ham_path)
 
 def list_edges(args, g):
     if len(args) > 2:
