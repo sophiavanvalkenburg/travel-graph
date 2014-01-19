@@ -6,26 +6,30 @@ class Graph():
         self.next_id = 0
         self.EARLIEST_DATE = datetime(2014, 1, 1)
         self.YEAR = 2014
+    def edges(self):
+        for from_a, to_b_dict in self.graph.items():
+            for to_b, edges in to_b_dict.items():
+                for i, edge in enumerate(edges):
+                    yield self.graph[from_a][to_b][i]
+    def clear(self):
+        self.graph = {}
+        self.next_id = 0
     def list_edges(self, show_enabled=True, show_disabled=False):
-        for from_a, to_b_dict in self.graph.items():
-            for to_b, edges in to_b_dict.items():
-                for edge in edges:
-                    edge_id, raw_date, price, enabled = edge
-                    date = datetime.strftime(raw_date, '%m/%d')
-                    enabled_str = 'enabled' if enabled else 'disabled'
-                    edge_str = "%d:\t%s->%s\t%s\t$%.2f\t%s"%(edge_id, from_a, 
-                            to_b, date, price, enabled_str)
-                    if enabled and show_enabled:
-                        print edge_str
-                    elif not enabled and show_disabled:
-                        print edge_str
+        for edge in self.edges():
+            edge_id, from_a, to_b, raw_date, price, enabled = edge
+            date = datetime.strftime(raw_date, '%m/%d')
+            enabled_str = 'enabled' if enabled else 'disabled'
+            edge_str = "%d:\t%s->%s\t%s\t$%.2f\t%s"%(edge_id, from_a, 
+                    to_b, date, price, enabled_str)
+            if enabled and show_enabled:
+                print edge_str
+            elif not enabled and show_disabled:
+                print edge_str
     def get_edge(self, target_edge_id):
-        for from_a, to_b_dict in self.graph.items():
-            for to_b, edges in to_b_dict.items():
-                for edge in edges:
-                    edge_id, date, price, enabled = edge
-                    if edge_id == target_edge_id:
-                        return edge
+        for edge in self.edges():
+            edge_id, from_a, to_b, date, price, enabled = edge
+            if edge_id == target_edge_id:
+                return edge
     def add_edge(self, from_a, to_b, date, price):
         if from_a not in self.graph:
             self.graph[from_a] = {}
@@ -33,8 +37,16 @@ class Graph():
             self.graph[from_a][to_b] = []
         date = datetime.strptime(date, '%m/%d')
         date = date.replace(year=self.YEAR)
-        self.graph[from_a][to_b].append([self.next_id, date, price, True])
+        self.graph[from_a][to_b].append([self.next_id, from_a, to_b, date,
+            price, True])
         self.next_id += 1
+    def remove_edge(self, edge):
+        edge_id, from_a, to_b, date, price, enabled = edge
+        self.graph[from_a][to_b].remove(edge)
+    def disable_edge(self, edge):
+        edge[5] = False
+    def enable_edge(self, edge):
+        edge[5] = True
     def neighbors(self, from_a):
         if from_a not in self.graph:
             return {}
@@ -68,14 +80,15 @@ class Graph():
                 return []
             for n, vals in neighbors.items():
                 for val in vals:
-                    edge_id, date, price, enabled = val
+                    _, _, _, date, price, enabled = val
                     if not enabled or date <= last_date:
                         continue
                     edge = (n, date, price)
                     if edge not in seen_edges:
                         seen_edges.append(edge)
                         if n != to_b:
-                            new_paths = helper(n, to_b, all_paths, seen_edges, date)
+                            new_paths = helper(n, to_b, all_paths, seen_edges, 
+                                    date)
                         else:
                             new_paths = [[]]
                         paths_from_a_to_b = [ [edge] + p for p in new_paths ]
@@ -95,7 +108,7 @@ class Graph():
                 return []
             for n, vals in neighbors.items():
                 for val in vals:
-                    edge_id, date, price, enabled = val
+                    _, _, _, date, price, enabled = val
                     if not enabled or date <= last_date:
                         continue
                     edge = (n, date, price)
@@ -109,7 +122,7 @@ class Graph():
                 return []
             else:
                 return min(paths, key=self.distance)
-        return helper(from_a, to_b, [], self.EARLIST_DATE)
+        return helper(from_a, to_b, [], self.EARLIEST_DATE)
     def distance(self, path):
         # path is list of (to_b, date, price)
         return sum( price for to_b, date, price in path )
@@ -122,13 +135,11 @@ class Graph():
         return path_str 
     def __str__(self):
         graph_str = ''
-        for from_a, to_b_edges in self.graph.items():
-            for to_b, edges in to_b_edges.items():
-                for edge in edges:
-                    edge_id, raw_date, price, enabled = edge
-                    date = datetime.strftime(raw_date, '%m/%d')
-                    if enabled:
-                        graph_str += "%s,%s,%s,%.2f\n"%(from_a, to_b, date, price)
+        for edge in self.edges():
+            edge_id, from_a, to_b, raw_date, price, enabled = edge
+            date = datetime.strftime(raw_date, '%m/%d')
+            if enabled:
+                graph_str += "%s,%s,%s,%.2f\n"%(from_a, to_b, date, price)
         return graph_str
 
 
